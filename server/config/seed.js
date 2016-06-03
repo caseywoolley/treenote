@@ -4,8 +4,72 @@
  */
 
 'use strict';
+import faker from 'faker';
+
+import Customer from '../api/customer/customer.model';
+
 import Thing from '../api/thing/thing.model';
 import User from '../api/user/user.model';
+
+function randRange(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+Customer.find({}).remove()
+  .then(() => {
+    var customers = [];
+    var customerCount = 2;
+    for(var i = 0; i < customerCount; i++) {
+      
+    //generate rooms
+    var floorCount = randRange(1, 3);
+    var roomCount = randRange(1, 6);
+    var bathCount = randRange(1, Math.min(4, roomCount));
+
+    var rooms = [];
+    for(var j = 0; j < (roomCount + bathCount); j++) {
+      rooms.push({
+        size: randRange(10, 300),
+        windows: randRange(1, 8),
+        floor: randRange(1, floorCount),
+        isBathroom: false
+      })
+    }
+
+    //generate home
+    var home = {
+      name: 'my house',
+      size: randRange(800, 3500),
+      floors: floorCount,
+      rooms: rooms,
+      hvac: {
+        heat: ['Furnace', 'Boiler', 'Heat Pump', 'Other'][randRange(1,4)],
+        ac: ['Central Air', 'Window Unit', 'Mini Split', 'Other'][randRange(1,4)],
+        installed: faker.date.past(30 * 12)
+      },
+      bathrooms: bathCount
+    };
+
+    //generate customers
+    customers.push({
+      firstName: faker.name.firstName(),
+      lastName: faker.name.lastName(),
+      homes: [home],
+      address: {
+        street: faker.address.streetAddress() + ' ' + faker.address.streetName(),
+        city: faker.address.city(),
+        state: faker.address.state(),
+        zip: faker.address.zipCode()
+      },
+      email: faker.internet.email(),
+      phoneNumber: faker.phone.phoneNumber()
+    });
+  }
+  Customer.create(customers)
+
+});
+
+
 
 Thing.find({}).remove()
   .then(() => {
